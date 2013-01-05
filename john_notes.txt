@@ -1,0 +1,2205 @@
+------------------------------------------------------------
+
+sequence of independent random generations may not result in the
+  best test cases, especially edge cases
+  no pointers, all bits set to 1, etc.
+  solution is to make decisions at higher level
+  e.g. swarm
+
+explain the difference between not generating valid inputs and
+  biasing the part of the space that we explore more
+
+draw a picture illustrating this
+
+why leave out test cases?
+  too hard to generate
+  lead to bugs not worth fixing
+  don't think we'll find bugs there
+
+why bias?
+  to get better coverage
+
+publishers
+  MIT
+  Cambridge
+  Morgan Kaufmann
+  Wiley
+  A. K. Peters
+  O'Reilly
+  No Starch
+
+poeple to ask for feedback:
+  Bertrand Meyer
+  Bart Miller
+  Charlie Miller
+  Andreas Zeller
+
+------------------------------------------------------------
+
+
+--------------------------------------------------
+what is testing?
+
+[diagram:
+  inputs
+  software under test
+  outputs
+  acceptability test
+    often takes the form:
+      known outputs 
+      comparison function]
+
+testing is pretty simple:
+- run the code on some chosen input, observe the output, check if it is correct
+- seems simple, but it's hard to:
+test the right inputs
+come up with the right acceptability tests
+
+a few facts about testing
+  and by facts of course I mean (my own opinions!)
+
+- goal isn't so much to find bugs, but rather to find them 
+  earlier-- before the customer finds them
+  - and in general we'd like to discover every defect as early as possible
+
+- it's possible to do a lot of it and still do a very bad job
+  - good testing requires imagination and good taste
+
+- it's all about the cost/benefit tradeoff
+  - totally wrong that more testing is always better
+  - testing methods should be evaluated by cost per defect
+    discovered (cost is human time + machine time)
+
+4 testing is made much easier by code that is designed to be
+  self-checking
+  - we'll cover this in detail later
+
+5 quality cannot be tested into software 
+  <=>
+  it's surprisingly easy to create code that's impossible to test effectively
+
+6 testing your own code is hard
+  - may not really want to break up
+  - may not know the bigger picture into which your code fits
+  - won't test the parts of the spec you missed, or misunderstood
+
+
+
+introduce a running examples used in several lectures
+- simple bounded buffer in Python
+- why not just use python data structures?
+  - well, we need an example
+  - the statically typed, statically allocated array is >10x faster
+    than the native python alternative for some use cases
+- go through the logic 
+- show one or two test cases and the results
+
+QUIZ: what are the results of these other test cases?
+
+
+what is happening when we test software?
+- lots of things!
+- a test is a little experiment: we're discovering what we actually
+  implemented, as opposed to what we hoped to implement
+  - output is acceptable: our confidence increases a bit
+  - output is unacceptable: we have found a defect in the system or the 
+    acceptability criterion, and need to fix one of them
+- often we're debugging the specification as much as the software
+- often we discover interesting facts about the OS, compiler, libraries, and
+  other modules that our code interacts with
+- these discoveries aren't necessarily a problem; the problem is when we
+  fail to discover some fact that really matters
+
+
+why are we testing?
+- people make mistakes
+- not just programmers but also designers, GUI people, etc.
+- these can turn into defects in software
+  - can't necessarily point at the line where the defect sits-- may be
+    an error of omission
+  - some errors lead to many related defects
+- a test produces an observable behavior
+- we compare this with the expected output (tricky!)
+  - the comparison either reveals a defect or not
+  - the observed wrong behavior is a fault
+- when we talk about bugs in code we often mix these things
+
+QUIZ: distinguish between mistake, defect, and fault
+
+example: jsfunfuzz
+https://bugzilla.mozilla.org/show_bug.cgi?id=349611
+
+testing can show the presence of bugs but almost never the absence
+
+becoming a great tester
+- testing is a fundamentally different role than development
+  - but of course many people are in both roles
+  - requires a bit of Orwellian doublethink
+    "I want this code to succeed"
+    "I want this code to fail"
+- recognize that it's actually quite hard
+  - can become better with hard work...
+- don't ignore it when you notice something weird
+  - one time I found a compiler bug during a lecture
+- break code early and often: the longer a bug survives, the more
+  expensive it becomes
+- a test case is "successful" when it breaks software
+- CS students (and real developers) often don't want their own code to
+  fail; this leads to weak code
+- you have to sincerely want to break code
+- here you'll be testing other people's code too! 
+
+testing for fun
+- satisfying to produce great software
+
+testing for profit
+- testing is a career at companies like Microsoft
+- bug bounties
+  - google: up to $20K
+  - mozilla
+  - Zeller example: 18 Chromium Security Rewards and 12 Mozilla Security
+    Bug Bounty Awards for a total of $50,000
+
+
+
+[write "Software Under Test (SUT)]
+
+there's always some software under test;
+this might be something huge like a Linux kernel;
+or it might be really small like a square-root function
+for now all that matters is we can draw a box around the stuff we're
+trying to test
+
+[draw the box]
+
+the software under test is going to be providing an
+interface or maybe several interfaces; 
+
+let's talk about what these interfaces are doing;
+
+
+
+for the next little but we're testing some kind of optimized
+square root function that we just wrote
+
+if we're testing the square root routine, during testing we drive
+the interface by passing numbers into it;
+
+so for exmaple just about the easiest possible test case is
+
+sqrt(9) 
+
+QUIZ: what should be the result? let's be clear that we're
+not necessarily talking about Python here, but rather about
+the general case
+
+a) 3
+b) -3
+
+Answer: any
+
+Explanation: both 3 and -3 are mathematically correct;
+in practice square root functions return 3, but this is
+only convention
+
+I deliberately chose this somewhat silly example to 
+start making a point that's actually somewhat deep:
+
+the issue is, what is the specification for sqrt()?
+is it specified to return a negative, a positive, or 
+is this not specified at all?
+
+of course, most of the time when we write software, and
+when we use software, there isn't any actual specification
+written down, and even when there is, it's usually just
+a bunch of English text that can be really ambiguous
+
+now, does this absence of some sort of real specification
+mean that we can't test square root? no, of course not,
+but we'll have to arrive at to at some kind of informal
+understanding of what the software is doing
+
+anyway, let's continue...
+
+our next test case is:
+
+sqrt(-1)
+
+question is: what should be the result?
+
+again, keep in mind that we're not necessarily just talking 
+about Python here, but about square roots in general
+
+please write down all of the answers that apply
+
+QUIZ:
+
+a) 1
+b) i 
+c) Nan
+d) throw an exception
+e) -1
+f) crash the machine
+
+ANSWER:
+  either i or NaN or throwing an exception appears to be 
+  reasonable; 
+  it's probably not the case that 1 or -1 could ever be
+  correct answers to this question, and implicitly
+  the machine shouldn't crash
+
+so the real answer is: we need to know more
+
+what's happening here is that doing a bit of testing has forced
+us to start thinking about the specification for this piece
+of software
+
+and I think it's illustrative that something extremely simple like a
+square root function can force us to think about this stuff; and in
+fact it's not uncommon -- probably it's the norm, really -- for
+software testing to be as much about guesssing the specification as it
+is about finding bugs in the code the we wrote;
+and that's not a bad thing-- it's good to be forced to refine
+our thinking about what the software is supposed to be doing
+
+let's pick at this issue in a bit more detail.
+
+one way we can think about a piece of code is as a mathematical
+function;
+of course this is a pretty obvious thing to do for the square
+root function, but it turns out we can do it for any piece of
+software.
+
+now, if you remember from your math classes, every function 
+has a domain and a range;
+
+the domain is the set of possible inputs to the function; 
+the range is the set of possible outputs; 
+what the function does is map each element of the domain to some
+element in the range
+
+[write these definitions]
+
+let's look at the domain and range for square root.
+remember that a bit earlier we encountered the facts that
+the square root of any positive number has two possible
+answers, and that the square root of any negative number
+has no real-valued answer;
+
+we can capture both of these restrictions by declaring 
+square root to have this form:
+
+sqrt: R+ -> R+
+
+alternatively, if we don't mind dealing with imaginary 
+numbers, we can say that square root looks like this:
+
+sqrt: R -> C
+
+but what about a piece of computer code that implements square root?
+clearly it's not going to operate over the reals since computers
+can't represent most real numbers, so let's say it's operating over
+the IEEE FP numbers;
+
+sqrt: F+ -> F+
+
+another way to define square root is to say that it works for all
+floating point number, but may return an error:
+
+sqrt F -> F U throw "math domain error"
+
+and in fact this is how the Python square root function works
+
+so now
+
+QUIZ:
+
+given this spec, do we want or need to test square root in Python or C
+using negative inputs?
+
+Answer: YES
+
+because its domain includes all floating point
+values, even though sqrt doesn't return a floating point value
+for negative inputs
+
+there's a testing principle at work here:
+
+- testing should include values selected from the entire domain
+
+in other words, if the specification says what happens when we
+call sqrt with a negative argument, we should test that
+
+sometimes you'll do this, you'll test a case that looks like it should
+be in a function's domain and something will go wrong -- maybe the
+program will crash or something -- but the person who wrote that code
+will come back and tell you that the input wasn't in the domain,
+which means basically that that code should not be tested using that
+input;
+and of course that's usually fine as long as the documentation, the man
+page or whatever, makes the restriction on usage clear
+
+restrictions on domain are crucial in practice, because otherwise we
+need a maximal amount of defensive code on every single interface and
+that's impractical for multiple reasons:
+- it'll be really slow, and
+- it clutters up the code unacceptable
+
+
+before we move on
+let's take a quick look at the C square root function
+
+[now talk over the man page]
+
+here we can see a slightly different situation than we saw in Python;
+first, the sqaure root of -0 is defined to be -0 and that's something
+that we definitely would want to test;
+if you haven't seen -0 before, this is one of many charming
+little things that comes out of using IEEE floating point
+
+also, the C sqrt function isn't going to throw an exception, but rather
+it will return a NaN, and we'd want to test that as well
+
+
+
+the next issue that I want to cover stems from the fact that
+it's often the case that you can invoke
+a function using inputs that are truly not within its domain,
+and we want to know whether the function should be tested using
+those values?
+
+let's look at a couple of examples.
+
+first, the queue example from the first module was fast because
+internally it used a python array which can be faster than a python
+list, but it has the disadvantage of being less flexible: it can't
+store any type of data like a Python list can, but only integers;
+if we try to stuff an string into that queue, it will fail with 
+an exception
+
+now we need to ask the question: do we need to test this queue
+by adding every other type to it?
+that is, with strings, lists, floats?
+the answer is probably no: the domain of the enqueue
+function just does not include values of these types;
+
+in a dynamically typed language like Python it's very common that you
+can pass almost anything to any function, so it's very common to see
+domain restrictions just like this
+
+
+in C programs, this same problem crops up in a potentially
+much more severe way;
+for example, let's look at the memcpy() function-- and it
+doesn't matter very much if you're not a C programmer because
+I'll try to explain the essentials
+
+[talk over the man page]
+
+memcpy is a function that simply copies a block of memory from one
+place in the address space to another;
+
+memcpy takes as arguments a pointer to the destination memory,
+a pointer to the source memory, and the number of bytes to copy;
+
+we might use this to make a copy of some data before modifying
+it;
+
+now to have to ask what happens if either the source or the destination
+pointer is a null pointer? 
+well, the specification for memcpy is silent on this issue, and
+moreover it says that the behavior of memcpy "is undefined"
+if the source and destination memory areas overlap
+
+basically what the developers of this function are saying is that
+the domain of memcpy only includes non-null pointers such that
+the blocks do not overlap, and moreover there's no point testing
+these cases because nobody cares what it does in that case
+
+
+
+now in contrast with software libraries and components where
+the domain is clearly defined, and may be a subset of all of the
+values that you can construct using the programming language,
+higher-level software artifacts often don't have the luxury of
+limiting their domains
+
+one example is an operating system;
+what is its domain?  in other words? what inputs to the operating system
+are allowed, and therefore need to be tested?
+
+now, I know we haven't discussed this case, but let's take a short quiz
+anyway so we can start to built up your intuition about testing.
+our example will be a slightly simplified version of the UNIX "read" system call, 
+which just reads some bytes out of a file that is already open.
+and here's what that call looks like:
+
+int read (int fd, void *buf, int n);
+
+now you can see that this call takes three parameters:
+the file descriptor, which is a small positive integer
+that references an open file
+
+buf is a pointer to some memory where we want the data to go
+
+and, "n" is the number of bytes to read from that file
+
+so here's the quiz. Which would be suitable call to make
+if we were testing the read system call?
+
+a) read (1, &b, 10)
+b) read (-999999, &b, 10)
+c) read (1, 0xdead, 10)
+d) read (1, &b, -333333)
+
+type all of the letters that apply into the text box
+
+ANSWER: the answer is all of the above.  when testing something
+like an operating system interface, you need to test it with
+all possible kinds of values -- the stranger, the better
+
+and it turns out there's a really good reason for this:
+the operating system interface is a trust boundary.
+on one side, we have the kernel, implemented by smart
+developers who we trust -- the trust is implicit because the
+OS is implementing our security policy and providing all services
+to programming running on it
+
+on the other hand, programs running on top of the OS 
+are generally not considered to be trusted.  even if they
+are not actually malicious, they're going to be buggy,
+and in practice they are going to execute system calls
+with very strange choices of arguments
+
+this answer leads us to another testing principle:
+
+- for any code where there is not a trusting relationship between the
+  interfaces that are used and provided, these interfaces should be
+  tested over all representable values, not just what seems to be
+  the domain
+
+let's make that a little more explicit
+
+[picture of red line with somebody bad on the other size]
+
+
+in fact, UNIX kernel developers sometimes use a tool called
+crashme;
+
+[picture...]
+
+what this tool does is generate some totally random bytes,
+mask off all exception handlers, and then start executing
+those bytes;
+in other words, they just try everything, with the goal
+of bringing down the kernel;
+any time the kernel crashes, a bug has been found
+
+
+
+interfaces that cross a trust boundary are special. they
+require serious testing on the entire range of representable
+values;
+people are bad at this, and this is a big part of the explanation
+of why random hackers with a fuzz tool (that is, a tool that 
+makes up randomized, or partially randomized values) are often
+effective at finding security holes in real software
+
+
+
+let's look at another example: a graphical user interface
+
+[picture]
+
+what is the domain for a GUI application?
+that is, what is set the of inputs it handles?
+basically this is the set of all possible GUI events (mouse
+clicks, keyboard events, etc.);
+we can just make a list of gui events and that constitutes
+a test input
+
+in other words, the domain consists of a large 
+-- extremely huge, actually --
+set of inputs where each input is a sequence of GUI events;
+a well-designed GUI will respond gracefully to every
+possible member of its domain
+
+so now I have another quiz for you and this one should be
+really easy.
+
+Which might be desirable tests for a GUI application?
+
+a) use the application normally
+b) let a 4-year-old bang on the keyboard for a while
+c) inject a stream of GUI events using a randomized tester 
+d) reproduce GUI events that crashed a previous version
+
+Enter all of the letters that apply.
+
+ANSWER: of course it is all of the above.  A GUI application
+typically does not want to trust its user to remain within
+some domain
+
+and it turns out that when my kids were younger and didn't know
+how to use a computer, they would often make a windows machine
+totally unusable within just a few minutes
+so really, many computer programs cannot actually handle all
+members of their input sets
+
+
+now, another issue that comes up is:
+just because we trust someone, for example another developer
+on the same team that we're on, does that mean their code
+will always generate calls that are within the domain
+of acceptable inputs when they call our code?
+
+generally not-- and this will lead us to defensive proramming
+a bit later
+
+
+
+
+overall, testing interfaces provided by the software under test
+is reasonably straightforward: we just write some test code
+that uses the interfaces;
+
+now, if that was all there was to testing, our job would be hard
+enough, but there's more;
+the software under test doesn't just provide interfaces, it also
+uses them
+
+what I mean here is that the software under test is going to be
+issuing calls to lower-level software, like libraries, the language
+runtime, and even the operating system
+
+for example let's take something like a web browser that's talking to
+the operating system using system calls, and then the operating system
+is talking to the network, talking to the disk, etc.
+
+now, maybe the network and disk don't matter for testing purposes,
+maybe we can just test the web browser by driving its graphical user
+interface and after we finish that, we call it good and ship our
+browser to the users
+
+well, maybe that's not such a good idea.
+
+for example, what if the web browser runs into a full hard disk when
+it tries to save a cookie or your history file to disk;
+does the browser just crash?
+does it mangle the contents of the files it's trying to store, because
+it gets half-way through some update?
+
+or does it do something intelligent like maybe deleting any files that
+are half-way updated and then not saving any more history until some
+disk space gets freed up?
+
+Well, of course we want to be sure our browser does the right thing,
+whatever it is --
+and to make sure, we need to test this condition; 
+probably run a lot of different tests on this stuff
+
+but now we have this awkward problem where we don't actually control
+how the operating system responds to requests that the browser makes;
+of course we can just make a full disk partition but this is pretty
+awkward because now everybody who runs the test suite has to have
+a full hard drive partition
+
+well, in the general case the problem is a lot worse than this,
+especially for low-level software written in C or C++ that more or
+less directly issues calls into the operating system
+
+a lot of time, system calls can fail in a really wide variety of
+strange ways
+
+let's take a quick look at a super-common UNIX system call called
+"read"
+
+this is how a UNIX process (or a MacOS process, for that matter)
+reads data from a file or a socket;
+
+so of course all real programs on a Mac or Linux box are issuing
+read calls constantly
+
+the way read works is that you pass it a file descriptor;
+that is, a handle to an open file;
+also you pass it a pointer to a buffer where you want the data to go;
+and finally, you tell it how many bytes you want to read from the
+file or from the network
+
+now that's all pretty straightforward, but let's look at some of the
+ways the operating system is allowed to respond.
+
+first, it's totally legal for the operating system to read fewer
+bytes than you asked for; it tells you that this happened, in which case
+you have to make another read call to read more bytes, but it's really
+common for people to forget to do this
+
+second, you might run into an end-of-file condition
+
+third, there are at least nine different ways that the read call can
+fail, and they're not all equivalent-- you might want to take different
+actions depending on exactly what kind of failure you run into
+
+now again, the problem is that we're not in control over how these
+failures happen -- it's the operating system that makes the decisions,
+and this makes it hard to fully test code that we write
+
+
+
+I'd like to tell you that there's a perfectly great solution to this
+kind of problem but the fact is that many real programs are unprepared
+for a lot of kinds of behavior that might comes from interfaces that
+they use;
+it's not a problem as long as those interfaces behave exactly as the
+programmer hoped, but it results in programs that can behave in really
+strange and broken ways when the developer's optimism wasn't quite
+justified
+
+
+ok, so we have this really difficult problem where interfaces used by
+the software under test can fail or otherwise act in unpredictable ways
+and this makes testing hard.
+there are a couple of ways to deal with this in practical situations
+
+the first one doesn't really have anything to do with testing but it's 
+such good advice I can't resist giving it, and that is to always try
+to use programming languages and libraries that insulate you from as
+much bad low-level behavior as possible;
+python generally does a great job of this, as does Perl and the libraries
+and runtimes for other scripting languages;
+even in C and C++ there are good, well-tested libraries available that
+can help out with this stuff; you should use them when possible
+
+from the testing point of view, a solution we sometimes use is called
+fault injection, which is where we somehow force an interface used
+by the software under test to fail;
+basically, we're simulating things like disk-full errors in order to
+try to understand how our software behaves when that happens
+
+there are a variety of ways to inject faults;
+probably the simplest is to change our software to call wrapper
+functions, rather than writing this code to make a temporary file:
+
+  file = open('/tmp/foo', 'w')
+
+we would call:
+
+  file = my_open('/tmp/foo', 'w')
+
+where my_open looks (and usually acts) just like open.
+
+but now if we want to, during testing, we can rig my_open so that it
+fails sometimes, and this will help us understand how our system
+reacts to this condition
+
+this is called fault injection and it's a pretty common testing technique
+
+in practice you have to be really careful with this;
+if you make my_open fail too often, the software you're testing probably
+won't even get off the ground
+you also have to be super careful to make it fail only in ways that
+the real Python "open" call could actually fail
+
+one way we'd typically do this is we'd make the first 100 (or whatever)
+calls to my_open succeed to the software under test can get started
+up properly and after that we'd have maybe 1% or 0.1% of calls fail,
+and then we'd just use the application normally and see how it works;
+this is an example of random testing and it's something we'll come
+back to later on in this course in quite a bit of detail
+
+the question you need to ask is: are you writing a program that needs
+to tolerate allowed failures in a graceful way?
+if not, then just don't worry about this -- let the unhandled exception
+take down your program
+but if you do want to deal with these errors, then this kind of testing can be a good idea.
+
+in general, code for handling errors is known to be some of the buggiest
+code, since it's not triggered very often, and it's not that
+atypical for people to not even write it;
+I teach operating systems and take off points when students don't check
+errors in their C code, this creates quite a lot of consternation 
+
+QUIZ:
+
+faults injected into an interface used by the SUT should be..
+
+a) all possible faults
+b) none
+c) faults we wish to make sure our system is robust against
+
+ANSWER: c
+
+
+
+-------------
+
+ok, to recap:
+we have a piece of software under test;
+it provides some interfaces that we're going to need to test, and
+that's most of the work of testing;
+
+but it also uses some interfaces and we're probably going to have to test
+how the SUT responds to different legal behaviors of those interfaces
+
+now, it would be great if this was the whole story for testing, but
+it isn't, and in fact there can be some complications that come up
+in specialized circumstances
+
+the issue is that the overt, explicit interfaces provided by the
+software under test, and used by the software under test, may
+not represent all of the inputs and outputs that we care about
+
+for example, on the input side, it's entirely possible that the
+behavior of the software we're testing depends on the time at which
+inputs arrive; now, obviously this isn't the case for all software,
+and if it isn't, then that's great, because it makes testing a lot easier
+
+just as a simple example, let's consider a graphical system that
+is processing raw mouse events;
+if two mouse clicks arrive in rapid succession, these probably make
+a double-click event;
+if they arrive further apart, they're individual single clicks;
+another example comes from network input, for example data that
+gets returned to a web browser;
+if this data arrives relatively quickly, everything is good and
+it'll get rendered as a web page;
+but if the data arrives too slowly, something in the browser or
+the operating system times out and we get a different kind of result:
+an error message
+
+now both of these examples are probably pretty easy to test, because
+in each case there are really just two possibilities:
+single click vs double, and 
+timeout vs. no timeout
+
+but in general timing can be pretty difficult to deal with; 
+here's I'll give a somewhat extreme example
+
+during the 1980s there was a radiation therapy machine called
+the Therac 25;
+
+radiation therapy means using focused radiation beams to
+destroy tumors without affecting nearby tissue too much;
+now, you can see that this is obviously not an inherently
+safe technology;
+it's going to depend on skilled operators and correctly
+functioning equipment to operate in a safe fashion
+
+anyway, what happened was, during 1985 and 1987 six
+people received massive radiation overdoses due to
+software errors and several of them actually died;
+I'll make sure that a link to a report about this
+incident appears in the supplemetary material and
+if you take a look at this you'll see that it's
+absolutely terrifying reading
+
+there were a number of underlying problems
+but the one I want to talk about here is timing-related
+where the machine could malfunction if you entered
+parameters very rapidly;
+
+this was due to a particular kind of sofware bug
+called a race condition, which means that different
+threads of execution are not properly synchronized
+with each other
+
+so anyway, if you entered data slowly -- as happened
+during testing of the Therac 25 -- there wasn't
+a problem
+
+however, after the machine was deployed, operators
+used it over and over and became quite skilled,
+they becamse fast at it
+
+eventually, an operator triggered the software
+race condition and the machine delibered a massive
+overdose
+
+
+as testers, the question we have to ask is:
+does the software under test care about the time 
+at which inputs are delivered?
+obviously this is "yes" for the Therac 25 or for something
+like the Linux kernel;
+
+and obviously it's "no" for a square root function,
+unless we've been incredibly careless;
+but how do we answer the question in general?
+
+let's make this into a quick quiz:
+
+we would consider it somewhat likely that the timing of inputs is
+relevant for testing a piece of software if:
+
+a) interacts directly with hardware devices
+b) interacts with external computer systems
+c) is multi-threaded
+d) prints time values into a debugging log file
+
+ANSWER: a, b, c
+
+the last is not that relevant since the time values are only being
+printed; this should not affect testing
+
+
+
+you'll notice that I popped this quiz question before lecturing
+on how to determine if timing needs to be taken into 
+account;
+that was beacuse there aren't really any easy answers here;
+
+this is one of the many cases where we have to understand
+something about the purpose and operation of the software
+under test in order to do a good job
+
+
+basically you want to look through the code for your software under
+test, and also its requirements, if these have been written down, and
+look for anything about timeouts or time values; 
+
+if that kind of thing isn't there and if it's single threaded code,
+this is still no guarantee, but it's start
+
+
+
+we are continuing to dig into the nuances of testing --
+we're looking at some of the things that can make testing hard,
+and we're looking at how to deal with them
+
+the final issue that I want to discuss on this general topic
+is inputs to the system that are what we call implicit, or "non-functional",
+they are inputs, but they have nothing to do with the actual
+interfaces provided by the software under test, or used by
+the software under test
+
+here I'm talking about things like context switches for multi-threaded
+software;
+when you write multi-threaded code, the operating system makes 
+decisions about what thread to run on what processor at what times,
+and you get very little control over those decisions
+
+the problem with context switches is that they can
+either reveal or hide concurrency-related errors such as
+deadlocks,
+or such as the race conditions in the Therac 25 software
+
+TODO: talk about platform dependencies
+
+let me give another example of non-functional inputs...
+
+some years ago, in the late 1990s, I spent a summer working for a
+company that made very fast network hardware
+
+we were testing a software stack that permitted applications on
+different machines to talk to each other at these very high speeds,
+and the software was supposed to tolerate arbitrary levels of packet
+corruption, sort of like TCP/IP, but this was a totally independent
+network stack
+
+the problem we faced was that we didn't have a good way to programmatically
+inject very low-level bit errors into packets, so what we would end 
+up doing sometimes is cracking open a network switch and running
+a key back and forth across the contacts inside;
+of course this generated a huge storm basically of little short-circuits
+that resulted in a ton of corrupted data and then we'd watch and 
+see how the software stack responded to these;
+sometimes it would keep right on going, other times it would
+hiccup or crash and we'd have some debugging to do
+
+
+the problem with implicit interfaces is they are very hard to 
+control and replicate -- and for testing we really would like to
+control and replicate them
+
+in some cases we use special-purpose software infrastructure such as a
+processor simulator -- this is a way that we can get full control
+over the details of the simulation
+
+
+as an example, some years ago I was working on testing software
+that runs on small embedded processors;
+
+[picture]
+
+these processors were too small to run multiple threads, but they
+did have interrupt handlers, which are just little software routines
+that run in response to external events;
+
+these made the software running on them prone to race condition
+
+on the real hardware, it was hard to find these race conditions
+becuase the interrupts just happened when they happened
+
+on the other hand, using a simulator, we could write a program
+that generated a schedule of which interrupts to fire when, and
+using this we could simulate lots of different interrupt
+scenarios, and in fact this found some bugs
+
+[update picture; show implicit inputs being made into
+explicit ones]
+
+
+
+
+we've looked at a number of ways that the
+software under test interacts with the rest of the world;
+
+now we're going to switch gears a little bit and talk about
+what we do with results output by the software under test;
+
+basically we're always asking the same question: are the
+outputs acceptable?
+without some kind of acceptability check, we're not testing
+software at all, and in practice the lack of a good
+acceptability check can be a real achilles heel for
+testing efforts
+
+let's keep in mind that output may include side effects, for example
+on the file system, sent over the network, etc.
+
+what we're going to see is a spectrum that our checks
+can occupy, ranging from very strong to extremely weak
+
+[draw it]
+
+let's first look at a very strong acceptability check
+- strong: results agree with oracle result
+  - for bounded buffer we can check the exact results
+    - reference implementation
+  - result hand-computed from spec
+  - result produced by a previous version of our system
+  - result produced by our system with optimizations
+    (memoization, etc.) turned off
+  - someone else's version of the same code
+  - result is the same on an input and a null-modified
+    version of the input
+- may be weak: outputs may need to be within some range
+- fails to violate an internal consistency check
+- may be very weak: fails to violate programming language rules
+  - may require instrumented execution environments
+    to detect rule violations, e.g. valgrind
+    - IOC example
+- perhaps even weaker: just manages to terminate
+- may be hard to quantify
+  - app is user-friendly
+  - game is fun to play
+  - atmospheric simulation produces realistic results
+- may include time at which results are produced
+  - what if anti-lock braking software produces its results too late?
+
+tricky thing: typically we're concerned with all of these layers at
+once
+- we're making sure the implementation meets the spec while still
+  ironing out low-level issues like unhandled exceptions
+- too often, we're forced to do very limited testing at the strong
+  end of the spectrum since we lack good test oracles
+
+
+
+kinds of testing;
+  not orthogonal-- this is sort of a survey
+
+- white box testing: the tester uses knowledge of the detailed internals of 
+  the system in order to construct better test cases
+
+- black-box testing: detailed internals of the system are not considered;
+  only the requirements or specification is used to generate test cases
+
+- unit testing
+  - this is what we're doing with the bounded buffer and the square root function
+  - no hypothesis about usage patterns
+  - usually done by developers, but can be white box or black box
+  - goal is to find defects in internal logic as early as possible;
+    these are hard to find later on
+  - mocks, unite test frameworks -- we'll provide some links
+
+- integration testing
+  - software modules that have already been subjected to unit tests are combined into
+    a group and tested together
+  - this is where we typically uncover the fact that interfaces were not defined as
+    tightly as we had hoped;
+  - there may be substntial diferences of assumption that have to be resovled
+
+- system testing, or validation testing
+  - does the system as a whole meet its goals?
+  - often at this point we're doing black-box testing
+  - here is where we care about usage patterns;
+    we may not care about making the system work for all possible use cases, but
+    rather just for the important ones
+
+- differential testing
+
+- regression testing
+  - multiple ways for a bug to sneak back into code
+    - old version of a file
+    - developer is still making the same error
+    - reflects a tricky part of the spec
+
+- stress testing
+ - system tested at or beyond its normal limits, best described through example
+ - square root: very large or very tiny numbers
+ - operating system:
+   - lots of system calls, large memory allocations, large file creations
+ - web server: many requests, many requests that all go to the backend
+ - typically done to assess the robustness of the system under test
+
+- random testing
+  - randomly generated inputs
+  - this is never the only kind of testing you'd do
+  - but often it's useful in finding corner cases
+  - crashme
+  - we'll talk more later
+
+------------------------------------
+quizzes about kinds of testing:
+
+if I do this it's most like...
+
+stress testing
+system/validation testing
+unit testing
+
+------------------------------------
+
+creating testable software
+
+- clean and simple, not convoluted
+  - refactor
+- can clearly describe what it implements and how it layers with other
+  software
+  - this fails surprisingly often in practice
+- doesn't contain more threads than necessary
+- doesn't have a swamp of global variables 
+- doesn't have a sea of pointers (for C code)
+
+- modules have unit tests
+  - unit test frameworks helpful but not necessary
+
+- modules might support fault injection for interfaces that they use
+
+
+
+- assertions
+  - executeable checks for properties that must be true
+
+  - rule 1: these are not for handling errors!
+    - they are for conditions that "cannot happen"
+  - rule 2: no side effects in the case where the assertion doesn't fail
+  - rule 3: not silly assertions such as assert (1+1) == 2
+  
+IDE QUIZ: write a single (of a few) lines of checkRep for the
+ring buffer from last time
+
+home that quiz worked out and was useful...
+
+why assertions?
+    - support more effective testing
+    - fail early, closer to the buggy code
+    - assign blame
+    - document invariants
+
+GCC: ~9000 assertions
+LLVM: ~10000
+
+- disable in production code?
+  NO: may have side effects
+  NO: better to fail early even in production code
+  YES: may be better to keep going than to crash (Ariane 5)
+  YES: assertions can be slow
+
+valgrind example:
+
+"The code is absolutely loaded with assertions, and these are
+permanently enabled. I have no plan to remove or disable them later.
+
+... as valgrind has become more widely used, they have shown their
+worth, pulling up various bugs which would otherwise have appeared as
+hard-to-find segmentation faults.
+
+I am of the view that it's acceptable to spend 5% of the total running
+time of your valgrindified program doing assertion checks and other
+internal sanity checks."
+
+NASA software example
+- plenty of assertions
+- but disabled during actual Mars landing
+
+http://www.di.unito.it/~damiani/ariane5rep.html
+
+------------------------------------
+unit 3: how much is enough?
+
+http://www.exampler.com/testing-com/writings/coverage-terminology.html
+http://www.exampler.com/testing-com/writings/experience.pdf
+http://www.exampler.com/testing-com/writings/coverage.pdf
+http://www.kaner.com/pdfs/FundamentalChallenges.pdf
+http://www.kaner.com/pdfs/negligence_and_testing_coverage.pdf
+
+one of the hardest things about testing is that it's hard to
+understand if we're doing a good job or not;
+and in fact it's really easy to spent a lot of time testing,
+start to believe we did a good job, and then have some really
+nasty bugs show up that we just didn't think to test
+
+what's going on is this
+[draw domain and range diagrams]
+let's say that without knowing it we're testing only inputs
+in this part of the domain;
+maybe these other parts seem silly, or redundant, or whatever
+
+the thing is that even this small sub-domain can contain
+an infinite of inputs, or so many that it's infinite for
+practical purposes-- so we can't even do a good job testing
+this sub-domain, but we might spend a lot of effort on it
+
+and of course what's really happening is that there are bugs
+triggered elsewhere in the domain
+
+some examples:
+- they are the ones that come up only when we type really fast-- as in
+  the therac 25 example
+- they are the ones with lots of cascaded if statements, as in the python
+  example we saw in unit 1 
+- they are the ones triggering a backdoor in our software
+
+today is about ways to measure the testing that we've done;
+so for example we do lots of testing and some tool tells us
+"your score is 41%... keep trying"
+
+turns out there are lots of reasons to do this:
+main:
+- find parts of the input domain that need more testing
+minor:
+- argue that we've done enough testing
+- argue that we haven't done enough testing
+- find tests that are redundant
+
+
+
+
+show domain and range
+- domain is a sea of points-- we can't usually test them all
+- historically people have been intersected in systematic testing methods
+- partition testing
+  - this is a strawman from old-style software engineering; but it'll help
+    set the stage
+  - divide domain into classes whose union is the entire input domain
+     - classes may overlap
+  - GOAL: every fault is densely triggered by some class 
+    - or, ideally, all inputs in the class trigger the fault
+  - in other words, the trivial partitioning, with 1 class,
+    is not helpful-- because obviously not all bugs are densely triggered
+    by the entire domain
+  - really hard; actually, impossible for large SW
+
+- coverage metrics are a different take on partition testing
+  - partitions are automatically created by inspecting the source code
+  - white-box method
+  - they do not meet the partition testing GOAL
+    - but may be useful anyway
+    - one obvious risk is this kind of testing cannot find errors of omission
+  - find code, or more generally, behaviors, not covered by our test cases
+- coverage metric assigns a number to a collection of test cases, usually
+  from 0% to 100%
+  - 100% means all coverage tasks have been accomplished
+
+test coverage:
+A measure of the proportion of a program exercised by testing.
+
+good:
+- provides a measurement that we can use as a score,
+  objective measures are useful
+- when coverage is less than complete, we are given meaningful tasks
+bad
+- can't find bugs of omission, because it's based on the code
+- hard to tell what a score <100 means
+- 100% coverage doesn't mean all bugs were found
+
+
+
+ok, that's enough abstract ideas, let's see what coverage can do for us in
+practice
+
+what we're going to look at here is some random open-source python code
+that happens to implement a splay tree
+
+before we get into the details, let me explain briefly what a splay tree is;
+broadly speaking it's just a kind of binary search tree;
+a binary search tree is a data structure where we can insert items, remove
+them, and look them up using a key;
+the main important thing is that the lookup key supports an ordering relation;
+so for example keys could be numbers
+where the ordering relation
+might be "greater than" 
+or strings where the ordering relation is dictionary order;
+in other words, since for any two words we can say which one comes
+before the other in the dictionary, we have an ordering relation 
+
+the main important thing about a binary search tree is that its nodes
+are arranged using the ordering relation, so for example if we have a
+node indexed by the word "the", then all nodes hanging off its left
+sub-tree will be indexed by words coming before "the" in the
+dictionary, and all nodes hanging off its right will be indexed by words
+coming after "the"
+
+so hopefully you can now see how this would support fast lookup:
+the tree contains a number of nodes exponential in its height and
+to do a lookup we're only going to walk one path;
+the upshot is the generally operations are going to take logarithmic
+time in the number of tree nodes,
+so for example, if the tree contains a million nodes, then to do a lookup
+or other operation we'll only need to look at log2(1,000,000) nodes,
+or about
+
+ok, now there are just a few more things you need to know about splay trees;
+first, it's a self-balancing tree, which means that if we insert nodes
+in sorted order -- which normally creates a pathological binary tree --
+it will adjust itself to try to maintain an efficient, balanced shape
+
+another other thing -- and this is really cool -- is that any time a node
+is accessed, it gets moved to the root of the tree; this means that frequently
+accessed nodes tend to stay near the root, giving very efficient access
+
+there are lots and lots of self-balancing binary search trees; the
+high-performance ones tend to have somewhat complicated
+implementations;
+the splay tree on the other hand is extremely simple and the implementation
+we're going to look at is barely above 100 lines
+
+so here's the code...
+
+what I'm showing here is an editor called emacs running on my local
+machine, it does indenting and highlighting that is fairly similar
+to what Udacity's IDE gives you
+
+here's the test suite, it uses python's unittest module, which is basically
+this handy framework for writing tests like this...
+
+here we can run the test, but now we're going to run it again
+under a coverage tool;
+we're not going to worry too much just yet about what this tool's
+output really means, we just want to get a feel for what it's 
+going to tell us
+
+so what we can see here is that 89 statements were run, but 9 were
+missed; let's take a quick look a those 9
+this one at the top doens't matter...
+
+line 38 shows that during testing we never tried to remove a node
+from the tree that wasn't in the tree;
+let's go ahead and augment the test suite
+
+...demo...
+
+this example is illustrative for several reasons.
+first, the coverage tool told us something interesting right away,
+and that's my experience in general as well.  as humans, we just have a
+hard time thinking about the behavior of code, and most of the time
+a tool like a profiler or a coverage tool will give us something to
+think about; of course if it doesn't, then that's good too since we
+can sleep a little easier
+
+the second thing is that the uncovered line -- that is, the line
+that led us to improve the test case here -- didn't contain the bug!
+rather, covering an uncovered line triggered a bug in code that had
+already been covered completely;
+this is pretty common, 
+and the fundamental thing we need to ask here is: what is the testing
+tool telling us?
+this is a question that we'll return to later in this unit but
+fundamentally what is happening is that when we fail to cover
+something, it's a mistake to interpret this as a mandate
+
+"write a test to cover that"
+
+rather, it's giving us some evidence, a hint that
+
+"your test suite isn't very well thought out"
+
+
+
+we just saw an example of how a coverage tool can be useful;
+before we get into coverage metrics in detail, let's look at an
+example where coverage metrics fail
+
+[prime example]
+
+analysis: 
+- statement coverage is pretty superficial! doesn't care about the
+values involved, or number of iterations of a loop
+
+
+--------
+
+
+let's look at some coverage metrics
+
+the first thing to know is that
+there are *lots* of kinds of coverage; in fact, there's a nice
+article that we'll link to in the supplemental material that lists
+101 kinds of coverage;
+when you hear this, it sounds like a joke but if you take a look at
+the list, you can see that most of these kinds of coverage would 
+probably find bugs in real systems
+
+but anyway, what I'm going to do is talk about the very small number
+of coverage metric that matter for everyday programming life and then
+discuss a few others that are interesting for one reason or another
+because they give insight into the nature of testing
+
+generally we'll move from weaker to stronger metrics
+
+- statement
+  - related: line coverage
+
+coverage examples and API quizzes
+  come up with minimal test cases that exercise the metric
+  come up with a bug that is exposed by the metric
+  come up with a bug that hides from the metric
+
+- branch
+  - each branch goes both ways (or all ways, for a switch)
+  - difference is that implicit else branches need to be covered,
+    and also zero trips through loops
+
+
+so now we've looked at the two coverage metrics, or maybe three if we
+count line coverage, that we likely to matter for everyday life. 
+on the other hand there are, as I've said, many other metrics and 
+here we're going to look at a few of them.
+the reason these are interesting is not that we're going to go out
+and obsessively get 100% on all of our codes, but rather because they
+form a part of the answer to the question: how should we come up 
+with good test inputs in order to find bugs in software?
+
+- loop: has every loop executed zero times, once, and more
+  than once?
+  based on the insight that loop boundary conditions are a frequent
+  source of bugs
+
+- MC/DC: modified condition / decision coverage
+This is a coverage metric that is used in Avionics certification;
+it's designed to be pretty rigorous but not to blow up into an exponential
+number of tests.
+It basically starts with branch coverage and adds:
+- every condition in a decision takes on every possible outcome
+conditions are just boolean inputs
+
+- every condition in a decision independently affects the outcome
+
+if a or (b and c):
+
+a=True, b=False, c=True -> True
+a=False, b=False, c=True -> False
+a=False, b=True, c=True -> True
+a=False, b=True, c=False -> False
+
+for more complicated expressions we're going to end up needing to
+draw out a complete truth table
+
+idea is to help find logic errors by fully exercising boolean conditions,
+and this is partially motivated by the fact that embedded control
+systems, such as those used in avionics, usually end up having lots
+of complex boolean expressions-- of course this may not be the case
+for other examples;
+
+the other idea is that MC/DC forces detection of conditions
+that do not affect the output of a decision since these are most likely
+logic errors;
+
+you can see that getting good coverage using this metric requires
+a pretty serious level of examination of the code, and that this is
+definitely impractical for a big piece of software
+
+- path coverage
+- distinct sequence of choices
+- loop example
+- conditional example
+
+- boundary value coverage
+  - explore limits of numerical ranges, since bugs lurk there
+  - pick an input on each side of the boundary
+  - can be applied to boundaries from the specification or also
+    from inside the implementation
+
+- what about concurrent software?
+now, in general in this class
+we're not dealing very much with testing concurrent codes,
+mainly because it's a difficult and specialized skill.
+but let's talk briefly about what coverage of concurrent software
+would mean;
+
+first of all, hopefully it is clear that applying sequential
+code coverage metrics to concurrent software is a fine idea,
+but probably it isn't
+going to give us any confidence that the code lacks concurreny
+errors such as ronditions and deadlocks
+  - code sections accessing shared variables are interleaved
+  - each lock "does something"
+
+- specification coverage and partition coverage
+  - partition coverage can't be accomplished
+  - specification coverage is different!  not derived from code, 
+    can find errors of omission
+    - missing error checks! 
+    - the other way to find these is fault injection, but that's hard
+
+
+
+what do we do with code the doesn't get covered?
+there are multiple possibilities...
+  - may be truly infeasible code : assert (1+1 == 2)
+  - may not be worth it
+     - easy error handling code
+  - may be telling us to improve our testing
+- if you don't cover some code, at least in a basic way such as
+  statement coverage, you're basically saying "It's fine with me
+  for my customers /users to be the first people who ever execute
+  this code"
+
+
+
+
+SQLite example:
+
+Lightweight SQL engine;
+very widely used:
+  airbus, dropbox, various apple products, android, many more!
+  good python bindings are available, by the way
+77.6 KSLOC; 
+tests are: 91392.4 KSLOC, or
+>1000 times more lines of tests than lines of code;
+
+[draw big and little boxes]
+
+so how is it tested?
+  100% branch coverage
+  100% MC/DC coverage
+  random testing -- we'll get into this
+  boundary value tests
+  lots of asserts
+  valgrind
+  integer overflow checks
+  lots of fault injections from OS interfaces
+
+this is perhaps pretty extreme!  but consider that this 
+application is used lots of places, bugs impact lots of people
+
+of course i'm not advocating the 1000x ratio, but this is a great
+example of testing done well, and it's probably why SQLite can be
+used in mission-critical applications
+
+
+
+automated whitebox testing
+- how does this work?
+- klee
+
+
+
+
+what does achieving good coverage really mean?
+- usually nothing! but it's convenient and quantifiable
+
+
+how to use coverage:
+- first do good testing
+- second, use coverage 
+  - if coverage isn't really high, your testing wasn't any good;
+    need to rethink the way testing is being done
+- is coverage was pretty high, it'll be easy to use the feedback to
+  improve tests the last 5% or so
+  - this is for unit testing
+  - for system-level testing, coverage isn't the goal
+
+if used this way, measuring coverage of a test suite and looking at
+  results can be very useful
+ - significant bang for the buck because it tells you things that are
+    hard to find out any other way different way
+
+remember: don't just blindly get good coveage
+
+good tests imply good coverage
+reverse isn't true
+
+similarly:
+
+I am smart -> I can do math problems
+reverse isn't true-- my cell phone can do math problems
+
+
+
+------------------------------------
+not covering this:
+
+what makes a good coverage metric?
+- coverage model is created statically from the code
+- each coverage task can be understood by the user
+- almost all coverage tasks must be coverable
+  (for those that are not, a review process should be used)
+- every uncovered task yields an action item
+- some action is taken on reaching 100% coverage
+  (e.g. coverage is finished)
+this list is from: http://www.cis.upenn.edu/~lee/05cis700/papers/BFM%2B05.pdf
+
+------------------------------------
+unit 4: random testing: getting something for nothing
+
+ok, we've finally gotten to my favorite topic, which is random testing,
+which basically just means that test cases are created, in part, using
+input from a random number generator
+
+this became my favorite testing method a few years ago when I noticed
+that without realizing it, I had written a random tester for every piece
+of software I ever wrote where I actually cared about its correctness!
+
+let's look at how it works...
+
+picture:
+  PRNG
+  domain knowledge
+  generator
+  test cases are output
+
+of course test cases are just the start-- we need an automated way
+to run the tests and check the answers
+
+  oracle
+  all in a harness
+  runs hundreds or millions of iterations
+
+before getting into the details, let's look at a large random tester 
+and a very small one
+
+compiler bug example
+
+unix read example
+
+2 API quizzes: students implement a random tester for the bitwise adder,
+  then find the bug in an incorrect adder
+
+
+----------
+
+hopefully from the previous example you learned that building a random
+test case generator doesn't need to be difficult, but realistically,
+it's usually a little more difficult than that
+
+a key problem is generating inputs that are valid; that is, those
+that are part of the input domain for the software under test
+
+
+[picture:
+
+show random input space, and show which part of this is ASCII text,
+valid HTML, and bug-triggering HTML
+
+next picture:
+
+show coverage graph using random data, ASCII text, valid HTML]
+
+
+
+----------
+
+let's say we want to do random testing of a piece of software that
+processes credit cards;
+one way to do that is to just pass completely random integers, and
+of course that'll work at some level, but it might not work very well
+because only a small fraction of all integers are valid credit card
+numbers;
+so what's going to happen is we'll waste a lot of time in our
+generator, and a lot of time in the front end of the processing
+system rejecting invalid card numbers, but not very much time
+actually testing the part of the system that is presumably most
+interesting, which only runs after being presented with a valid
+credit card;
+this is a fairly simple example of a common problem with random
+testing and the answer is fairly obvious: we spend most of our
+testing time on random, but valid credit card numbers, for 
+which we'll need to write special generator,
+and that's what you're going to do here.
+
+you're going to write a function called "generate" that
+takes two parameters:
+- first, a list of strings representing prefixes. a prefix is a fixed set of digits
+  at the start of a credit card number that identifies the
+  issuer.  usually this is six digits, but we'll permit it to vary
+  for example, I have a card that starts with 372542.
+- second, a length: the total number of digits in the number
+  to generate
+
+given these inputs, you generate a number that:
+- start with a randomly selected prefix
+- next, some random digits
+- finally a check digit that identifier the number as valid
+
+of course, the total length must be as requested!
+
+Luhn explanation:
+
+"For a card with an even number of digits, double every odd numbered
+digit and subtract 9 if the product is greater than 9. Add up all the
+even digits as well as the doubled-odd digits, and the result must be
+a multiple of 10 or it's not a valid card. If the card has an odd
+number of digits, perform the same addition doubling the even numbered
+digits instead."
+
+
+
+
+----------
+
+now in the credit card example, invalid inputs caused us to
+waste CPU time generating these inputs and throwing them away, but
+that's not the worst problem that can be caused by invalid inputs
+
+let's assume we're going unit testing of some internal interface
+for processing credit card data, and it assumes that credit card numbers
+are valid;
+for example, maybe it's written in C and just crashes if we fail to
+provide valid data;
+and that is much worse because it takes time for a person to look 
+through the crashes, instead of just time for a computer program
+to reject the invalid input
+
+at this point we're obligated to write the function that you just wrote,
+it's no longer optional
+
+this is pretty common to be testing interfaces that can't do all of
+their own validity checking, and in fact that's what happened to us
+while testing C compilers;
+
+
+
+----------
+
+random testing gets no respect:
+
+ok, so now you've seen how easy it is to build a random tester, and I 
+hope that you'll build many of them in the future;
+we're going to spend basically all of the rest of this course on the 
+details
+
+but before we do that, let's read what perhaps the best-known software
+testing book of all time has to say about random testing:
+
+"Probably the poorest methodology of all is random-input testing ...
+What we look for [when testing] is a set of thought processes that
+allow one to select a set of test data more intelligently."
+
+on the other hand...
+
+"The introduction of random testing practically eliminated user bug
+reports on released back ends.  To our amazement, RIG [the random
+tester] was able to find over half of all the bugs reported by
+customers on the code generator in just one night of runtime."
+
+what I'd say we look for is a set of thought processes that allow one
+to create a strong random tester
+
+Hamlet 94:
+"most criticism of random testing is really objection to misapplication of the
+method using inappropriate input distributions"
+- this is correct but too weak
+- better: most criticism of random testing is really objection to random testing
+done badly
+
+
+----------
+Random Testing vs. Fuzzing
+
+original fuzzing papers vs. modern connotation of fuzzing
+
+let's start with the original work from 1990
+
+totally random data provided to unix command line utilities
+  editors
+  terminal programs
+  text processing utilities
+  etc.
+
+with this incredibly simple technique -- not worrying at all
+about the test case validity problem -- they were able to crash
+1/4 to 1/3 of utilities on any version of UNIX they used
+
+study was repeated in 1995, extending to network and
+GUI applications, with much the same results
+
+in 2000 the fuzzed windows applications and found high rates
+of crashes,
+
+in 2006, MacOS X: command line apps performed well, but only
+8 out of 30 GUI apps failed to crash
+
+modern fuzzing:
+
+fuzzing connotes penetration testing
+principles are exactly the same as random testing, but tools are
+specialized (and commercial!) and the specific techniques are
+different
+
+due to personal bias I'm going to be talking about random testing; if
+you want to move on to real fuzzing, it won't be too difficult
+
+fuzzing has connotation of:
+  invalid and semi-valid data
+  penetration testing
+  lots of tools available!
+random testing:
+  valid, invalid, whatever
+  improving reliability
+
+--------------
+Random Testing in Alternate History
+
+let's look at some well-known bugs and try to figure out if they
+could have been found using fuzzing, and also if fuzzing would have
+been a good way to find them
+
+we'll start with the well-known Pentium fdiv bug;
+this is a HW bug, not a software bug, but the principles are the
+same;
+fdiv is just a machine instruction that divides two numbers, so in
+assembly language we'd write something like:
+fdiv arg1, arg2
+and the problem is that sometimes it was wrong
+[show graph]
+and this happened because some values in a lookup table for the hardware
+implementation of the divider didn't get loaded, and were zeros instead
+
+fdiv bug occurs for 1 out of 9 billion inputs, so let's see about how
+long it would take to find this bug using random testing;
+
+if we would have run one test every 10 microseconds, giving a budget
+of about 600 cycles to test the result using a 60 MHz pentium at the
+time, we get
+1/9000000000 * 100000 
+3600 seconds per hour
+
+gives XX hour expected time to find this bug, so it was defintely
+findable; note that intel had a test oracle available, for example
+the existing 487 FPU would have produced the correct results
+
+so random testing would have been a great way to find this bug!
+
+
+now let's talk again about the Therac 25
+...would have worked...
+repeating keystroke entries at random speeds would have 
+sufficed...
+yes, but so much was wrong with this software and how it was
+developed that fuzzing was the last thing they needed...
+
+
+1988 Internet worm:
+  buffer overflow in finger daemon
+  similar to bugs found in original fuzzing paper, from 
+  around the same time!!
+
+
+Zune bug:
+
+would have found it, but totally not necessary-- exhaustive unit
+testing would have sufficed
+
+----------
+random testing of APIs
+
+so what we're doing is looking at a progression of random testers,
+from the simpler to the more complicated;
+as you can see, the major thing creating difficult for us is 
+structure required for inputs
+
+the logical next step for us is random testing of APIs, and the
+difference here is that we're not just generating a single input
+like a credit card number, but rather a sequence of inputs, and
+the complication is that there may be dependencies among those
+
+let's look at a quick example; file systems are part of an operating
+system that takes a hard disk or other mass storage device, which just
+looks like a flat array of blocks, and builds upon it a system of
+hierarchical directories containing files
+
+this ends up being pretty complicated and 5 file systems for Linux
+that I looked at end up at between 15,000 and 70,000 lines of code;
+that's a lot of code and if you think about it, it's really important
+for file systems to be correct since these store all of our persistent
+data
+
+mount/unmount
+open/close
+read/write/seek/stat/...
+
+NASA does this for filesystems used in space missions!
+
+
+random testing of the bounded queue
+
+API quiz: write the tester
+
+now go through mine
+
+
+------------------------------------
+unit 5: more automated testing
+
+generating random tests
+
+- we can do random bits
+- we can constrain them in simple ways
+- we can use a grammar, a sequence generator, or similar
+- we can solve really hard problems of this form like valid
+  C programs that have extremely complicated constraints
+
+- remember:
+  - if fuzzing across a trust boundary, anything goes!
+  - if internal interface, need to be careful
+
+fuzzing existing inputs
+  - flip bits 
+  - modify selected fields, perhaps using constraints
+  - Zeller javascript
+
+5-line fuzzer
+crashme
+
+------------
+
+Oracles for Random Testing
+
+Hamlet 94:
+"random testing has only a specialized niche in practice, mostly
+because an effective oracle is seldom available"
+- even this friendly article is critical; don't read the SE literature,
+  an oracle is always available (though often not a very good one)
+
+oracles for random testing-- worthless unless automated
+- weak oracles
+  - doesn't crash
+  - doesn't violate a language rule (exception)
+  - doesn't violate rules from in instrumented execution environment
+    e.g. valgrind, ioc
+  - assertions
+- strong oracles:
+
+- inverse oracles
+  - save/load
+  - transmit/receive
+  - encode/decode
+    - crypto
+    - modem
+    - audio
+    - video
+  - compress/decompress data 
+  - assembler/disassembler
+
+- nullspace transformation
+
+- identity oracles
+  - multiple versions-- works extremely well for compiler testing
+  - previous version that preserves functionality-- would have worked for Intel fdiv bug
+    - refactoring
+    - conforming to standard
+- true oracles
+  - reference implementation
+
+------------
+
+can we splice the fdiv graph into that presentation?
+
+add an API quiz with a few broken queues where they don't get to see 
+the implementations-- make sure they can find the bugs
+
+- if you can't find the bugs, think hard about what you haven't
+  tested, that you can test
+
+- all bugs are deterministic, and all can be triggered by a small
+  number of calls; so I haven't done anything silly like making the
+  queue fail on one in 9 billion inputs like the pentium fdiv
+
+- keep in mind that the queue's input domain is API calls where
+  values are integers -- if you try a non-integer it'll throw an
+  exception and that's not a bug
+
+solutions
+
+------------
+Random Testing in the Bigger Picture
+
+why does random testing work?
+- based on weak hypotheses about bug locations
+- if same person writes code and test cases, they'll tend to not
+  test parts of the spec that they mis-implemented
+- huge asymmetry between computer power and people power
+  like computer Go players
+
+- why does fuzzing work so well on commercial systems? because 
+  the developers aren't doing it!  
+- I'd argue that in many cases, software development efforts that
+  leave out random testing are flawed;
+  modern systems are too complicated for humans to construct good
+  test cases, and the consequences of bugs are too large
+
+in contrast, here's the dynamic that we hope for:
+
+early on:
+- write random unit testers and fault injectors, like the ones we've
+  been building; these help ensure a solid foundation for integration
+
+- as modules get integrated together, we keep using these testers
+  when possible
+
+- whole-system random testers, which fuzz external interfaces like
+  file I/O and GUIs, should be built as early as possible; initially
+  these can be quite simple-- they don't generate very good inputs
+
+- what we want is to not flood people with bugs; this saps willpower and
+  they'll start ignoring us so they can get work done
+
+- but we do want to keep incrementally improving the robustness of 
+  software; these bug reports help spot architectural weaknesses,
+  poorly specified interfaces, etc. -- getting this information later
+  results in hacky patches instead of real learning
+
+- now the system and its random testers can evolve together; we 
+  incrementally add features to the test case generator, being careful
+  to never overload with bugs
+
+- tester development never takes up very much of anyone's time
+ 
+--------------
+Engineering Rules and Probabilities
+
+we just talked about random testing in the bigger picture, and
+here's another similar issue
+
+- think hard about what kind of test cases to generate; write a
+  generator for them
+- look at the testcases and think hard about them; also use coverage
+  data; tweak the rules and the probabilities until these things come
+  more into line with what you want
+- go back to step 1
+- example 1: keep files open when doing FS testing
+- example 2: loops that trigger vectorization
+
+queue fuzzer:
+discuss the issue about the random walk -- does it hit the corner cases?
+use coverage to answer this
+explain algorithm and dynamics
+
+another example:
+bit counter from blog post
+http://blog.regehr.org/archives/651
+how to fix?
+
+another problem: 
+let's say we special-case the mount and unmount calls in FS testing;
+this creates a problem where we spend all out time
+in the steady state and miss problems that come up only
+at startup and shutdown;
+
+[draw pic]
+
+one way to fix this: adding another testing loop!
+
+------------
+Can Random Testing Inspire Confidence?
+
+  well-understod API + 
+  small code + 
+  strong invariants + 
+  well-tuned random tester + 
+  good coverage results = 
+  confidence!
+
+on the other hand, never just do random testing, always in addition to
+whatever else you're doing
+
+------------
+Tradeoffs in Spending Time on Random Testing
+
+problems:
+- input validity problem is hard (lots of people give up too early!)
+- oracle problem
+- no stopping criterion
+- may find unimportant bugs
+  - do we fix everything or only some bugs? this is an economic question
+  - if we fix some, how is that decided?
+    - this is not how proud developers operate
+- may test the same (boring) part of the input space many times
+  - so finds the same bug many times
+- may be hard to debug with tests that make no sense
+- every fuzzer finds different bugs
+
+advantages:
+- less tester bias, fewer hypotheses
+- once implemented, human cost is nearly zero
+- often surprises us (this is subjective)
+- every fuzzer finds different bugs
+- fun!
+
+------------
+fuzzing implicit inputs
+
+redraw the picture showing three sources of input
+
+- perturb the schedule
+  - cause other load on the machine
+  - network load
+- sleep inside or near critical section
+  - stoller story
+- "wrong buffer" in a CPU emulator
+
+------------
+redo the nugget about the bit counter to make it a quiz
+
+------------
+Summary, Guidelines, Principles
+
+- no program is too big or small to benefit from random testing,
+  unless it admits exhaustive testing
+
+- find the right APIs to fuzz: provided, used, implicit
+  - fuzz everything that matters, especially interfaces that span
+    trust boundaries 
+  - if you don't fuzz an Internet-facing API, or an API for files
+    that are downloaded from the internet, then someone else will do
+    it for you
+
+- don't just generate random bits, use the PRNG as inputs to a
+  algorithm whose output is a random testcase
+
+- if irrelevant bugs are coming out, use heuristics and limits to keep
+  random tests in a zone that is more like non-random inputs
+
+- when doing random testing "for real" always log seeds
+
+- think hard about whether the random tests are exercising the parts
+  of the SUT that you want to test
+  - use coverage tools to back up your reasoning
+
+- sanity check the random tester itself by injecting errors
+  into the SUT and seeing if you can find them
+  - really this is just another kind of coverage!
+
+- if you have different ideas about what kind of things to test,
+  implement them all and randomly select among them
+  - for example, when choosing values, randomly select between interesting
+    values and truly random values
+  - when you know about specific features of the SUT that may be
+    buggy, target them explicitly (but not exclusively)
+
+------------------------------------
+
+case studies
+- explain some of my fuzzers
+  - myrinet, 
+    Csmith, ...
+- crashme -- look at the code
+- fox and myreen
+- emulator fuzzers
+
+------------------------------------
+unit 6: more issues in testing
+
+what about when a tester finds lots of bugs
+
+should be so lucky to have this problem!
+
+  option 1: report one bug at a time-- works great if you can fix
+    bugs rapidly and have lots of time
+
+  option 2: triage
+    assertion violations or other error messages
+    stack traces
+    first broken version: 
+    reduced test cases
+
+------------------------------------
+test case reduction
+
+- manual 
+
+- delta debugging
+
+- show using delta for a GCC bug
+
+------------------------------------
+
+reporting bugs
+- respect the conventions
+- don't report a duplicate!
+- small test case
+- valid test case
+- reproducible failure
+- expected and actual output
+- behavior is obviously wrong
+- full info about system and program version where the problem
+  was discovered
+
+--------------
+
+testing principles, guidelines, rules, whatever:
+
+- testers must want software to fail
+
+- testers are detectives: they must be observant for suspicious
+  behavior and anomalies, and should not ignore these
+
+- all available oracles should be used in testing
+
+- test cases should include values selected from the entire input
+  domain
+
+- interfaces that cross a trust boundary must be tested over all
+  representable values, not just the ostensible domain
+
+- brute force goes a long ways
+  - selected parts of the input can sometimes be exhaustively tested
+  - most everything else can be randomly tested
+
+- quality can't be tested into bad software <->
+  not all code can be tested effectively; testable code should be as
+  simple as possible and should be written with testing in mind
+  - no hidden coupling, back-channels
+  - few shared variables
+  - few shared globals
+  - no pointer soup
+
+- code should be self-checking by using assertions wherever
+  possible; however:
+  - assertions are never used for error checking
+  - assertions must not be side-effecting
+  - assertions should not be silly, or trivial
+
+- code has three sources of input:
+  - APIs that it provides can be tested directly
+  - APIs that it uses require fault injection techniques, which can be
+    accomplished by library substitution or by calling wrapper
+    functions
+  - non-functional inputs are difficult and testing these often
+    requires specialized tool support
+  - all three sources of test inputs should be used, when appropriate
+
+- failed coverage of code doesn't provide a mandate to cover that
+  code, but rather gives clues about ways in which the current test
+  suite is inadequate; blindly coding to the coverage metric destroys
+  those clues without improving the test suite very much
+
+
+------------------------------------
+building mutation-based fuzzers
+
+challenge problem: use Python's AST module to build a Python program
+  fuzzer; get it to crash one or more Python implementations; as we
+  saw in an early unit, there are small programs that do this
+
+python fuzzer: use the AST module
+http://blueprintforge.com/blog/2012/02/27/static-modification-of-python-with-python-the-ast-module
+http://eli.thegreenplace.net/2009/11/28/python-internals-working-with-python-asts/
+probably just change integers and math operators
+try:
+  various options (optimize or not)
+  various VM versions
+
