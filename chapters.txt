@@ -45,7 +45,20 @@ why is random testing good?
 ------------------------------------------------------------
 background on testing 
 
-need to keep this short, see Udacity notes...
+need to keep this short
+
+the question is: what do we need to introduce?
+- domains and ranges
+- oracles
+- sources of input: 
+  APIs provided by the SUT
+  APIs used by the SUT
+  implicit inputs: context switches, etc
+
+how much testing is enough?
+  briefly introduce coverage?
+
+see Udacity notes in john_notes.txt
 
 ------------------------------------------------------------
 building a random tester

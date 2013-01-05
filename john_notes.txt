@@ -7,11 +7,10 @@ sequence of independent random generations may not result in the
   e.g. swarm
 
 explain the difference between not generating valid inputs and
-  biasing the part of the space that we explore more
+  biasing the part of the space that we explore more; 
+  draw a picture illustrating this
 
-draw a picture illustrating this
-
-why leave out test cases?
+why would we fail to generate some of the valid test cases?
   too hard to generate
   lead to bugs not worth fixing
   don't think we'll find bugs there
@@ -33,6 +32,8 @@ poeple to ask for feedback:
   Bart Miller
   Charlie Miller
   Andreas Zeller
+  Robby Findler
+  Norman Ramsey
 
 ------------------------------------------------------------
 
