@@ -16,7 +16,7 @@ why would we fail to generate some of the valid test cases?
   don't think we'll find bugs there
 
 why bias?
-  to get better coverage
+  to focus on areas of the code that contain harder coverage targets
 
 publishers
   MIT
@@ -25,7 +25,10 @@ publishers
   Wiley
   A. K. Peters
   O'Reilly
+  Prentice Hall
+  Addison Wesley
   No Starch
+  Sams
 
 poeple to ask for feedback:
   Bertrand Meyer
