@@ -42,6 +42,11 @@ why is random testing good?
     but you don't!
     hard to write test cases for one's own blind spots--randomization can help find them
 
+how to use random testing
+  ideal: develop the test-case generator along with the software
+    early on, both are bad-- which is good
+    later, both are good-- which is also good!
+
 ------------------------------------------------------------
 background on testing 
 
