@@ -1,0 +1,11 @@
+  latex styles that seem to have good typography:
+
+http://www.ctan.org/tex-archive/macros/latex/contrib/classicthesis
+
+http://code.google.com/p/tufte-latex/
+
+  good notes:
+
+http://stackoverflow.com/questions/193298/best-practices-in-latex
+
+http://www.read.seas.harvard.edu/~kohler/latex.html
