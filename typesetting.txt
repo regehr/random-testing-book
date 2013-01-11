@@ -1,11 +1,15 @@
-  latex styles that seem to have good typography:
+  latex book styles that seem to have good typography:
 
+http://www.tex.ac.uk/tex-archive/macros/latex/contrib/memoir/
+http://www.ctan.org/tex-archive/macros/latex/contrib/koma-script/
 http://www.ctan.org/tex-archive/macros/latex/contrib/classicthesis
-
 http://code.google.com/p/tufte-latex/
 
-  good notes:
+  good latex notes:
 
 http://stackoverflow.com/questions/193298/best-practices-in-latex
-
 http://www.read.seas.harvard.edu/~kohler/latex.html
+
+  notes:
+
+45-75 characters per line, including spaces; 66 is ideal
