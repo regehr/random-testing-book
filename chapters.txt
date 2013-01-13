@@ -142,6 +142,11 @@ challenging to find oracles for:
   embedded systems (engine control, autopilot, ...)
 
 ------------------------------------------------------------
+a complete example
+
+go through everything for an ADT
+
+------------------------------------------------------------
 reporting bugs
 
 test case reduction 

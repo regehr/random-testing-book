@@ -1,5 +1,7 @@
 ------------------------------------------------------------
 
+random testing vs. BET
+
 sequence of independent random generations may not result in the
   best test cases, especially edge cases
   no pointers, all bits set to 1, etc.
