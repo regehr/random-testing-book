@@ -162,20 +162,24 @@ structure-aware
 ------------------------------------------------------------
 advanced practical issues
 
-longevity of test session
-test case size
 test loop automation
   invoking oracles
+  setup and cleanup for each test
+    super important to not screw this up...
   protecting from resouce over-use
   insulating from fuzzer damage: use a VM or other sandbox
-coverage feedback to a GA
+
+longevity of test session
+
+test case size
 
 ------------------------------------------------------------
 research issues
 
+search-based testing: feedback from coverage
 concolic testing
-random testing papers
 swarm testing
+random testing papers
 
 ------------------------------------------------------------
 conclusions
