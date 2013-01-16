@@ -36,9 +36,11 @@ poeple to ask for feedback:
   Bertrand Meyer
   Bart Miller
   Charlie Miller
+  Lionel Briand
   Andreas Zeller
   Robby Findler
   Norman Ramsey
+  Yannis Smaragdakis
 
 ------------------------------------------------------------
 

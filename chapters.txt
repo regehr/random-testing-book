@@ -160,29 +160,26 @@ totally random
 structure-aware
 
 ------------------------------------------------------------
-advanced practical issues
-
 test loop automation
-  invoking oracles
-  setup and teardown for each test
-    when the experiment modifies long-lived state (files,
-    locks, ...) it becomes super important to not screw this up
-    look out for hidden changes, e.g. /tmp files, shmem
-    segments, ...
-  protecting from resouce over-use
-  insulating from fuzzer damage: use a VM or other sandbox
 
-longevity of test session
-
-test case size
+invoking oracles
+setup and teardown for each test
+  when the experiment modifies long-lived state (files,
+  locks, ...) it becomes super important to not screw this up
+  look out for hidden changes, e.g. /tmp files, shmem
+  segments, ...
+protecting from resouce over-use
+insulating from fuzzer damage: use a VM or other sandbox
 
 ------------------------------------------------------------
-research issues
+advanced topics
 
+longevity of test session
+test case size
 search-based testing: feedback from coverage
 concolic testing
 swarm testing
-random testing papers
+random testing papers and books
 
 ------------------------------------------------------------
 conclusions
