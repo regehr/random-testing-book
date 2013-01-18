@@ -23,6 +23,7 @@ do not use if...
   it's a one-off script and its input is extremely difficult to randomize,
     for example because it invovles a big directory hierarchy or a collection
     of machines on the interet
+    characterize "unfuzzable" programs: environment intensive
   can't find a workable oracle
 
 fuzzing occupies a unique niche, complements all of...
