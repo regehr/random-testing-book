@@ -4,11 +4,13 @@ http://www.tex.ac.uk/tex-archive/macros/latex/contrib/memoir/
 http://www.ctan.org/tex-archive/macros/latex/contrib/koma-script/
 http://www.ctan.org/tex-archive/macros/latex/contrib/classicthesis
 http://code.google.com/p/tufte-latex/
+http://mirrors.ibiblio.org/CTAN/info/memdesign/memdesign.pdf
 
   good latex notes:
 
 http://stackoverflow.com/questions/193298/best-practices-in-latex
 http://www.read.seas.harvard.edu/~kohler/latex.html
+http://tex.stackexchange.com/questions/41679/meta-packages-and-typesetting
 
   notes:
 
