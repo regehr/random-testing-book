@@ -1,4 +1,8 @@
 ------------------------------------------------------------
+TODO: we need a license; creative commons?
+  http://creativecommons.org/licenses/
+
+------------------------------------------------------------
 introduction
 
 what this book isn't about

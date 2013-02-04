@@ -15,3 +15,5 @@ http://tex.stackexchange.com/questions/41679/meta-packages-and-typesetting
   notes:
 
 45-75 characters per line, including spaces; 66 is ideal
+
+http://stackoverflow.com/questions/6188780/git-latex-workflow/6190412#6190412
