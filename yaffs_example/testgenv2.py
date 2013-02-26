@@ -50,25 +50,19 @@ calls = {"yaffs_freespace" : ((), [pathname]),
          "yaffs_close" : ((), ["h"]),
          "yaffs_read" : ((), ["h", buffer, bytes]),
          "yaffs_write" : ((), ["h", buffer, bytes])}
+def param(p):
+    if type(p) == types.StringType:
+        return p + "[" + str(random.randint(0,gen[p])) + "]"
+    else:
+        return p()
 def call():
     f = random.choice(calls.keys())
-    c = f+"("
+    c = f + "("
     (res, params) = calls[f]
     if res != ():
-        if res not in gen:
-            gen[res] = 0
-        else:
-            gen[res] += 1
+        gen[res] = gen.get(res, -1) + 1
         c = res + "[" + str(gen[res]) + "] = " + c
-    for p in params:
-        if type(p) == types.StringType:
-            c += p + "[" + str(random.randint(0,gen[p])) + "], "
-        else:
-            c += p() + ", "
-    cp = c.rfind(", ")
-    if (cp != -1):
-        c = c[0:cp]
-    return c + ")"
+    return c + reduce(lambda x,y: x + param(y) + ", ", params[:-1], "") + param(params[-1]) + ")"
 
 def addCall(s):
     outf.write("  callFunc(" + s + ', "' + s.replace('"', '\\"') + '");\n')
