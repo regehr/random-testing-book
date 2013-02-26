@@ -11,10 +11,10 @@ outf = open(outFile,'a')
 
 pathElements = ["alpha","beta","gamma","delta","epsilon"]
 def pathname():
-    path = "\"/yaffs2"
+    path = '"/yaffs2'
     while random.randint(0,1) != 0:
         path += "/" + random.choice(pathElements)
-    path += "\""
+    path += '"'
     return path
 
 modes = ["S_IREAD","S_IWRITE"]
@@ -30,13 +30,7 @@ calls = {"yaffs_freespace" : [pathname],
          "yaffs_rename" : [pathname, pathname]}
 def call():
     f = random.choice(calls.keys())
-    c = f+"("
-    for p in calls[f]:
-        c += p() + ", "
-    cp = c.rfind(", ")
-    if (cp != -1):
-        c = c[0:cp]
-    return c + ")"
+    return f + "(" + reduce(lambda x,y: x + y() + ", ", calls[f][:-1], "") + calls[f][-1]() + ")"
 
 def addCall(s):
     outf.write("  callFunc(" + s + ', "' + s.replace('"', '\\"') + '");\n')
