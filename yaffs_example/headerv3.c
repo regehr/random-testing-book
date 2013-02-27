@@ -24,20 +24,55 @@ int last_yaffs_error = 0;
 
 int last_errno = 0;
 
+void fail() {
+  printf("TEST FAILED\n");
+  exit(255);
+}
+
 int test(int val, char* msg) {
   last_yaffs_return = val;
   last_yaffs_error = yaffs_get_error();
   if (VERBOSE) {
-    printf ("%d: %s = %d ", s++, msg, val);
+    printf("%d: %s = %d ", s++, msg, val);
     if (val == -1) {
-      printf (" error: %s(%d)\n", yaffs_error_to_str(last_yaffs_error), last_yaffs_error);
+      printf(" error: %s(%d)", yaffs_error_to_str(last_yaffs_error), last_yaffs_error);
     }
+    printf ("\n");
   }
   return val;
 }
 
 int ref(int val, char* msg) {
-  last_errno = errno;
+  int failed = 0;
+  int terminate = 0;
+  last_errno = -errno;
+  if (val != last_yaffs_return) {
+    if (((val < 0) && (last_yaffs_return > 0)) ||
+	((val > 0) && (last_yaffs_return < 0))) {
+      failed = 1;
+      terminate = 1;
+    } else{
+      if (strstr("h[", msg) == 0) {
+	failed = 1;
+	terminate = 1;
+      }
+    }
+  }
+  if ((val == -1) && (last_yaffs_return == -1) && (last_yaffs_error != last_errno)) {
+    failed = 1;
+  }
+  if (failed) {
+    printf("DIFFERENTIAL MISMATCH\n");
+    printf("  RETURN VALUES:  yaffs = %d\n", last_yaffs_return);
+    printf("                  ref =   %d\n", val);
+    printf("  ERROR VALUES:   yaffs = %s (%d)\n", 
+	   yaffs_error_to_str(last_yaffs_error), last_yaffs_error);
+    printf("                  ref =   %s (%d)\n",
+	   yaffs_error_to_str(last_errno), last_errno);
+  }
+  if (terminate)
+    fail();
+  return val;
 }
 
 int main () {
