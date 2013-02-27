@@ -14757,3 +14757,47 @@ int yaffs_tags_compat_query_block(struct yaffs_dev *dev,
 
 	return YAFFS_OK;
 }
+
+struct error_entry {
+	int code;
+	const char *text;
+};
+
+static const struct error_entry error_list[] = {
+	{ ENOMEM , "ENOMEM" },
+	{ EBUSY , "EBUSY"},
+	{ ENODEV , "ENODEV"},
+	{ EINVAL , "EINVAL"},
+	{ EBADF , "EBADF"},
+	{ EACCES , "EACCES"},
+	{ EXDEV , "EXDEV" },
+	{ ENOENT , "ENOENT"},
+	{ ENOSPC , "ENOSPC"},
+	{ ERANGE , "ERANGE"},
+	{ ENODATA, "ENODATA"},
+	{ ENOTEMPTY, "ENOTEMPTY"},
+	{ ENAMETOOLONG, "ENAMETOOLONG"},
+	{ ENOMEM , "ENOMEM"},
+	{ EEXIST , "EEXIST"},
+	{ ENOTDIR , "ENOTDIR"},
+	{ EISDIR , "EISDIR"},
+	{ ENFILE, "ENFILE"},
+	{ EROFS, "EROFS"},
+	{ EFAULT, "EFAULT"},
+	{ 0, NULL }
+};
+
+const char *yaffs_error_to_str(int err)
+{
+	const struct error_entry *e = error_list;
+
+	if (err < 0)
+		err = -err;
+
+	while (e->code && e->text) {
+		if (err == e->code)
+			return e->text;
+		e++;
+	}
+	return "Unknown error code";
+}

@@ -5,7 +5,7 @@ import types
 
 outFile = sys.argv[1]
 length = int(sys.argv[2])
-genRef = not("--noRef" in sys.argv)
+genRef = "--ref" in sys.argv
 
 assert (subprocess.call(["cp headerv3.c " + outFile],shell=True) == 0)
 
@@ -18,8 +18,7 @@ def pathname():
     path = '"/yaffs2'
     while random.randint(0,1) != 0:
         path += "/" + random.choice(pathElements)
-    path += '"'
-    return path
+    return path + '"'
 
 def concatProb(opts,P,c):
     m = filter(lambda opt: random.random() < P, opts)

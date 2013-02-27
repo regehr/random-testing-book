@@ -62,13 +62,15 @@ int ref(int val, char* msg) {
     failed = 1;
   }
   if (failed) {
-    printf("DIFFERENTIAL MISMATCH\n");
-    printf("  RETURN VALUES:  yaffs = %d\n", last_yaffs_return);
-    printf("                  ref =   %d\n", val);
-    printf("  ERROR VALUES:   yaffs = %s (%d)\n", 
-	   yaffs_error_to_str(last_yaffs_error), last_yaffs_error);
-    printf("                  ref =   %s (%d)\n",
-	   yaffs_error_to_str(last_errno), last_errno);
+    if (VERBOSE) {
+      printf("DIFFERENTIAL MISMATCH\n");
+      printf("  RETURN VALUES:  yaffs = %d\n", last_yaffs_return);
+      printf("                  ref =   %d\n", val);
+      printf("  ERROR VALUES:   yaffs = %s (%d)\n", 
+	     yaffs_error_to_str(last_yaffs_error), last_yaffs_error);
+      printf("                  ref =   %s (%d)\n",
+	     yaffs_error_to_str(last_errno), last_errno);
+    }
   }
   if (terminate)
     fail();
@@ -83,7 +85,6 @@ int main () {
       rwRef[i][j] = i;
     }
   }
-  system("rm -rf "REFPATH);
   int r;
   r = test(yaffs_start_up(), "yaffs_start_up()");
   assert (r == 0);
