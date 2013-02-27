@@ -75,6 +75,7 @@ building a random tester
 
 this chapter is example-driven
   fuzzing a python red-black tree 
+    http://newcenturycomputers.net/projects/rbtree.html
   credit card validation or CRC, to illustrate nasty input validity issues
 
 introduce grammar-based test case generation
