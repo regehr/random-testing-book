@@ -5,9 +5,6 @@
 int simulate_power_failure;
 int random_seed;
 
-#define FILE_SIZE 10000
-
-char rwbuf[FILE_SIZE];
 int s = 0;
 
 int callFunc(int val, char* msg) {
