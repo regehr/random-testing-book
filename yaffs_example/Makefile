@@ -1,5 +1,10 @@
 YAFFS_FLAGS = -DCONFIG_YAFFS_DIRECT -DCONFIG_YAFFS_YAFFS2 -DCONFIG_YAFFS_PROVIDE_DEFS -DCONFIG_YAFFSFS_PROVIDE_VALUES -I inc -I yaffs2
+
+CC=gcc
 CFLAGS = -g -coverage -O2
+
+#CC=clang
+#CFLAGS = -fsanitize=undefined -g -O2 -coverage
 
 all: testv1 testv2 testv3
 
