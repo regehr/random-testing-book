@@ -24,6 +24,22 @@ int last_yaffs_error = 0;
 
 int last_errno = 0;
 
+int check_buffers() {
+  int i, j;
+  for (i = 0; i < NUM_BUFFERS; i++) {
+    for (j = 0; j  < BUF_SIZE; j++) {
+      if (rw[i][j] != rwRef[i][j]) {
+	if (VERBOSE) {
+	  printf("MISMATCH: Buffer contents differ at buffer %d, location %d:\n", i, j);
+	  printf("          %d for yaffs vs. %d fo r ref\n", rw[i][j], rwRef[i][j]); 
+	}
+	return  0;
+      }
+    }
+  }
+  return 1;
+}
+
 void fail() {
   printf("TEST FAILED\n");
   exit(255);
@@ -46,6 +62,12 @@ int ref(int val, char* msg) {
   int failed = 0;
   int terminate = 0;
   last_errno = -errno;
+
+  if (!check_buffers()) {
+    failed = 1;
+    terminate = 1;
+  }
+
   if (val != last_yaffs_return) {
     if (((val < 0) && (last_yaffs_return > 0)) ||
 	((val > 0) && (last_yaffs_return < 0))) {
