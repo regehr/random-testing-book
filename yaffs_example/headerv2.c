@@ -6,7 +6,7 @@ int simulate_power_failure;
 int random_seed;
 
 #define BUF_SIZE 10000
-#define MAX_HANDLES 1000
+#define MAX_HANDLES 5000
 
 int h[MAX_HANDLES];
 

@@ -9,7 +9,7 @@ int simulate_power_failure;
 int random_seed;
 
 #define BUF_SIZE 2048*3
-#define MAX_HANDLES 1000
+#define MAX_HANDLES 5000
 
 int h[MAX_HANDLES];
 int fd[MAX_HANDLES];
@@ -72,11 +72,11 @@ int ref(int val, char* msg) {
     if (((val < 0) && (last_yaffs_return > 0)) ||
 	((val > 0) && (last_yaffs_return < 0))) {
       failed = 1;
-      terminate = 1;
+      //      terminate = 1;
     } else{
       if (strstr("h[", msg) == 0) {
 	failed = 1;
-	terminate = 1;
+	//terminate = 1;
       }
     }
   }
