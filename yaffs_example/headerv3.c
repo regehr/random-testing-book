@@ -60,7 +60,7 @@ int check_buffers() {
       if (rw[i][j] != rwRef[i][j]) {
 #ifdef FAIL_VERBOSE
 	printf("MISMATCH: Buffer contents differ at buffer %d, location %d:\n", i, j);
-	printf("          %d for yaffs vs. %d fo r ref\n", rw[i][j], rwRef[i][j]); 
+	printf("          %d for yaffs vs. %d for ref\n", rw[i][j], rwRef[i][j]); 
 #endif
 	return  1;
       }
@@ -176,6 +176,10 @@ int main () {
       rw[i][j] = i;
       rwRef[i][j] = i;
     }
+  }
+  for (i = 0; i < MAX_HANDLES; i++) {
+    h[i] = -1;
+    fd[i] = -1;
   }
   cleanup_ref(REFPATH);
   assert(test(yaffs_start_up(), "yaffs_start_up()") == 0);

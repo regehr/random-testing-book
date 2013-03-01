@@ -24,7 +24,7 @@ class MyDD(DD.DD):
 
         print self.coerce(deltas)
 
-        rv = subprocess.call(["gcc -o testDD testDD.c yaffs2.o -DCONFIG_YAFFS_DIRECT -DCONFIG_YAFFS_YAFFS2 -DCONFIG_YAFFS_PROVIDE_DEFS -DCONFIG_YAFFSFS_PROVIDE_VALUES -I inc -I yaffs2 -g -coverage -O2 -DFAIL_VERBOSE >& /dev/null"], shell=True)
+        rv = subprocess.call(["gcc -o testDD testDD.c yaffs2.o -DCONFIG_YAFFS_DIRECT -DCONFIG_YAFFS_YAFFS2 -DCONFIG_YAFFS_PROVIDE_DEFS -DCONFIG_YAFFSFS_PROVIDE_VALUES -I inc -I yaffs2 -g -coverage -O2 " + sys.argv[3] + " >& /dev/null"], shell=True)
 
         if rv != 0:
             return self.PASS
