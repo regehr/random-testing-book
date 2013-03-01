@@ -39,14 +39,12 @@ void cleanup_ref(const char* path) {
       strncpy(newPath, path, PATH_MAX);
       strncat(newPath, "/", PATH_MAX);
       strncat(newPath, e->d_name, PATH_MAX);
-      printf ("PATH = %s\n", newPath);
       cleanup_ref(newPath);
       rmdir(newPath);
     } else if (e->d_type == DT_REG) {
       strncpy(newPath, path, PATH_MAX);
       strncat(newPath, "/", PATH_MAX);
       strncat(newPath, e->d_name, PATH_MAX);
-      printf ("FILE = %s\n", newPath);
       unlink(newPath);
     }
   }
