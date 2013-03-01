@@ -156,6 +156,14 @@ int ref(const int val, const char* msg) {
   last_ref_return = val;
   last_ref_error = -errno;
 
+#ifdef REF_VERBOSE
+  printf("%d: %s = %d ", s++, msg, val);
+  if (val == -1) {
+    printf(" error: %s(%d)", yaffs_error_to_str(last_ref_error), last_ref_error);
+  }
+  printf ("\n");
+#endif
+
   failed = check_buffers() || failed;
 
   failed = check_return(msg) || failed;

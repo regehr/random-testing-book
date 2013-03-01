@@ -52,9 +52,12 @@ if __name__ == '__main__':
     fcs = fc.split("  test(")
     deltas.append((1, fcs[0]))
     index = 2
-    for chunk in fcs[1:]:
+    for chunk in fcs[1:-1]:
         deltas.append((index, "  test(" + chunk))
         index += 1
+    lasts = fcs[-1].split("  printf(")
+    deltas.append((index, "  test(" + lasts[0]))
+    deltas.append((index+1, "  printf(" + lasts[1]))
 
     mydd = MyDD()
     
@@ -68,6 +71,8 @@ if __name__ == '__main__':
     f.write(mydd.coerce(c))
     f.close()
     # print
+
+    subprocess.call(["gcc -o " + sys.argv[2].replace(".c","") + " " + sys.argv[2] + " yaffs2.o -DCONFIG_YAFFS_DIRECT -DCONFIG_YAFFS_YAFFS2 -DCONFIG_YAFFS_PROVIDE_DEFS -DCONFIG_YAFFSFS_PROVIDE_VALUES -I inc -I yaffs2 -g -coverage -O2 " + sys.argv[3] + " >& /dev/null"], shell=True)
     
     # print "Isolating the failure-inducing difference..."
     # (c, c1, c2) = mydd.dd(deltas)	# Invoke DD
