@@ -24,10 +24,10 @@ testv2: testgenv2.py yaffs2.o headerv2.c testv2.c
 	$(CC) -o testv2 testv2.c yaffs2.o $(YAFFS_FLAGS) $(CFLAGS) -DVERBOSE=1
 
 testv3.c:
-	python testgenv3.py testv3.c 500 --ref
+	python testgenv3.py testv3.c --length=500 --ref
 
 testv3: testgenv3.py yaffs2.o headerv3.c testv3.c
-	$(CC) -o testv3 testv3.c yaffs2.o $(YAFFS_FLAGS) $(CFLAGS) -DVERBOSE=1
+	$(CC) -o testv3 testv3.c yaffs2.o $(YAFFS_FLAGS) $(CFLAGS) -DVERBOSE -DFAIL_VERBOSE -DNO_ERROR_CHECK
 
 clean:
 	rm -rf *.o *.gcda *.gcno testv1.c testv2.c testv3.c testv1 testv2 testv3

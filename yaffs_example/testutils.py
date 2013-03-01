@@ -61,6 +61,7 @@ def ref(s, refMap):
 
 def addCall(calls, refMap):
     s = call(calls)
+    msg = s.replace('"','\\"')
     sRef = ref(s, refMap)
     msgRef = sRef.replace('"','\\"')
     outf.write("  test(" + s + ', "' + msg  + '");\n')
