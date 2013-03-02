@@ -98,8 +98,7 @@ int check_return(const char* msg) {
   return 0;
 #endif
   
-  if ((last_yaffs_return != last_ref_return) && (strstr(msg, "h[") == 0)) {
-    printf ("MSG = %s\n", msg);
+  if ((last_yaffs_return != last_ref_return) && (strstr(msg, "fd[") == 0)) {
 #ifdef FAIL_VERBOSE
     printf("RETURN VALUE MISMATCH\n");
     dump_returns();

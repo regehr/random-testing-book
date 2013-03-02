@@ -29,5 +29,17 @@ testv3.c:
 testv3: testgenv3.py yaffs2.o headerv3.c testv3.c
 	$(CC) -o testv3 testv3.c yaffs2.o $(YAFFS_FLAGS) $(CFLAGS) -DVERBOSE -DFAIL_VERBOSE -DNO_ERROR_CHECK
 
+testv4.c:
+	python testgenv4.py testv4.c --length=500 --ref
+
+testv4: testgenv4.py yaffs2.o headerv3.c testv4.c
+	$(CC) -o testv4 testv4.c yaffs2.o $(YAFFS_FLAGS) $(CFLAGS) -DVERBOSE -DFAIL_VERBOSE -DNO_ERROR_CHECK
+
+testv5.c:
+	python testgenv5.py testv5.c --length=500 --ref
+
+testv5: testgenv5.py yaffs2.o headerv3.c testv5.c
+	$(CC) -o testv5 testv5.c yaffs2.o $(YAFFS_FLAGS) $(CFLAGS) -DVERBOSE -DFAIL_VERBOSE -DNO_ERROR_CHECK
+
 clean:
-	rm -rf *.o *.gcda *.gcno testv1.c testv2.c testv3.c testv1 testv2 testv3
+	rm -rf *.o *.gcda *.gcno testv[0-9]*.c test[0-9]*
