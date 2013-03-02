@@ -46,7 +46,7 @@ def swarm(calls):
     config = {}
     for c in calls:
         (P, res, params) = calls[c]
-        if random.random() < P:
+        if (not opts["swarm"]) or (random.random() < P):
             config[c] = (res, params)
     return config
 
