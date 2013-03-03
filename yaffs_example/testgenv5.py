@@ -32,7 +32,7 @@ def Cpathname():
         pathHistory.append(path)
     return path
 
-dirmode = lambda: "S_IREAD|S_WRITE|S_IEXEC" # YAFFS2 ignores directory permissions
+dirmode = lambda: "S_IREAD|S_IWRITE|S_IEXEC" # YAFFS2 ignores directory permissions
 mode = lambda: T.someOf(["S_IREAD", "S_IWRITE", "S_IEXEC"], 0.5, "|")
 flag = lambda: T.someOf(["O_CREAT", "O_APPEND", "O_RDWR", "O_RDONLY", "O_WRONLY"], 0.5, "|")
 
