@@ -55,10 +55,10 @@ def param(p):
         destructive = p[0] == "!"
         if destructive:
             p = p[1:]
-        if random.random() < 0.05:
-            pv = random.randint(0,gen[p])
-        else:
+        if random.random() < float(opts["Pfeedback"]):
             pv = random.choice(live[p])
+        else:
+            pv = random.randint(0,gen[p])
         if destructive:
             try:
                 live[p].remove(pv)
