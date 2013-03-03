@@ -68,11 +68,15 @@ refMap = [('"/yaffs2', 'REFPATH "'),
           ("rw[", "rwRef[")]
 
 s = 0
-while s < int(T.opts["length"]):
+t = 0
+tTimeout = T.opts["length"] * 5
+while s < int(T.opts["length"]) and (t < tTimeout):
     try:
         T.addCall(calls, refMap)
         s += 1
     except (KeyError, IndexError):
+        t += 1
         pass
+    
 
 T.finishTest()
